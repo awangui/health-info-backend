@@ -19,10 +19,10 @@ def register_client():
 
     if 'date_of_birth' in data:
         try:
-            # Parse the date string into a date object
-            dob = datetime.strptime(data['date_of_birth'], '%d-%m-%Y').date()
+            dob = datetime.strptime(data['date_of_birth'], '%Y-%m-%d').date()
+
         except ValueError:
-            return jsonify({'error': 'Invalid date format. Use DD-MM-YYYY'}), 400
+            return jsonify({'error': 'Invalid date format.'}), 400
     else:
         dob = None
 
@@ -116,12 +116,23 @@ def update_client_profile(client_id):
         return jsonify({'error': 'Client not found'}), 404
 
     for key, value in data.items():
-        if hasattr(client, key):
+        if key == "programs":
+            if isinstance(value, list):
+                # Safely get the program IDs
+                program_ids = [item['id'] for item in value if isinstance(item, dict) and 'id' in item]
+                programs = Program.query.filter(Program.id.in_(program_ids)).all()
+                client.programs = programs
+        elif hasattr(client, key):
             setattr(client, key, value)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
-    return jsonify({'message': 'Client profile updated'}), 200
+    return jsonify({'message': 'Client profile updated successfully'}), 200
+
 
 # Route to delete a client
 @client_bp.route('/clients/<int:client_id>', methods=['DELETE'])
