@@ -33,7 +33,8 @@ def register_client():
         gender=data.get('gender'),
         phone_number=data.get('phone_number'),
         email=data.get('email'),
-        address=data.get('address')
+        address=data.get('address'),
+        programs=data.get('programs', [])
     )
 
     db.session.add(client)
@@ -57,6 +58,7 @@ def list_clients():
                 'gender': c.gender,
                 'phone_number': c.phone_number,
                 'address': c.address,
+                'created_at': c.created_at,
                 'programs': [{'id': p.id, 'name': p.name} for p in c.programs]
             }
             client_list.append(client_data)
