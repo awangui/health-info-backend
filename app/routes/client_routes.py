@@ -157,6 +157,7 @@ def get_client_profile(client_id):
         'gender': client.gender,
         'phone_number': client.phone_number,
         'address': client.address,
+        'created_at': client.created_at,
         'programs': [{'id': p.id, 'name': p.name} for p in client.programs]
     }), 200
 
