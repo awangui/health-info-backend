@@ -306,3 +306,31 @@ def enroll_client_in_program(client_id, program_id):
     db.session.commit()
 
     return jsonify({'message': 'Client enrolled in program'}), 200
+
+
+@client_bp.route('/clients/search', methods=['GET'])
+def search_clients():
+    query = request.args.get('q', '')
+    if not query:
+        return jsonify({'error': 'Query parameter "q" is required'}), 400
+
+    clients = Client.query.filter(
+        (Client.first_name.ilike(f'%{query}%')) |
+        (Client.last_name.ilike(f'%{query}%')) |
+        (Client.email.ilike(f'%{query}%'))
+    ).all()
+
+    if not clients:
+        return jsonify({'message': 'No clients found matching the search criteria'}), 404
+
+    serialized_clients = [
+        {
+            'id': client.id,
+            'first_name': client.first_name,
+            'last_name': client.last_name,
+            'email': client.email
+        }
+        for client in clients
+    ]
+
+    return jsonify(serialized_clients), 200
